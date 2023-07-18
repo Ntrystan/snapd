@@ -38,9 +38,7 @@ def check_pr_title(pr_number: int):
     # so instead we just scrape the html title which is unlikely to change
     # radically
     parser = GithubTitleParser()
-    with urllib.request.urlopen(
-        "https://github.com/snapcore/snapd/pull/{}".format(pr_number)
-    ) as f:
+    with urllib.request.urlopen(f"https://github.com/snapcore/snapd/pull/{pr_number}") as f:
         parser.feed(f.read().decode("utf-8"))
     # the title has the format:
     #  "Added api endpoint for downloading snaps by glower · Pull Request #6958 · snapcore/snapd · GitHub"
@@ -66,7 +64,7 @@ def main():
     try:
         check_pr_title(args.pr_number)
     except InvalidPRTitle as e:
-        print('Invalid PR title: "{}"\n'.format(e.invalid_title))
+        print(f'Invalid PR title: "{e.invalid_title}"\n')
         print("Please provide a title in the following format:")
         print("module: short description")
         print("E.g.:")

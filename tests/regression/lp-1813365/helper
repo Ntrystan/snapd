@@ -17,7 +17,11 @@ def main() -> None:
         'Host: localhost\r\n'
         'Content-Length: ' + str(len(request_payload)) + '\r\n\r\n'
         + request_payload)
-    fname = '/tmp/' + ''.join(random.choice(string.ascii_lowercase) for i in range(10)) + ';uid=0;'
+    fname = (
+        '/tmp/'
+        + ''.join(random.choice(string.ascii_lowercase) for _ in range(10))
+        + ';uid=0;'
+    )
     with contextlib.ExitStack() as stack:
         sock = stack.enter_context(socket.socket(socket.AF_UNIX, socket.SOCK_STREAM))
         stack.callback(os.remove, fname)

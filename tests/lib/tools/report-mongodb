@@ -32,7 +32,7 @@ def environ_or_required(key):
 
 def connect(host, port, db_name):
     client = MongoClient(host=host, port=int(port))
-    if not db_name in client.list_database_names():
+    if db_name not in client.list_database_names():
         print("report-mongodb: invalid db name, it does not exist in mongodb")
         sys.exit(1)
     return client[db_name]
@@ -46,7 +46,7 @@ def _get_json(value):
 
 
 def insert(db, col, metadata, value):
-    if not col in db.list_collection_names():
+    if col not in db.list_collection_names():
         print("report-mongodb: invalid db collection, it does not exist in db")
         sys.exit(1)
 
@@ -74,7 +74,7 @@ def insert(db, col, metadata, value):
     try:
         date = json_value["date"]
         time = json_value["time"]
-        created_at = datetime.strptime("{} {}".format(date, time), "%Y-%m-%d %X").isoformat()
+        created_at = datetime.strptime(f"{date} {time}", "%Y-%m-%d %X").isoformat()
     except ValueError:
         created_at = datetime.now().isoformat("T", "seconds")
 

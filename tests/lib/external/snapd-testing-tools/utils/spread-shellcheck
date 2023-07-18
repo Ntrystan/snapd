@@ -272,8 +272,7 @@ def checkfile(path, executor):
             try:
                 future.result()
             except ShellcheckRunError as serr:
-                errors.addfailure('suites/' + suite + '/' + section,
-                                serr.stderr.decode('utf-8'))
+                errors.addfailure(f'suites/{suite}/{section}', serr.stderr.decode('utf-8'))
 
     if errors:
         raise errors
@@ -283,8 +282,8 @@ def checkfile(path, executor):
 
 def is_file_in_dirs(file, dirs):
     for dir in dirs:
-        if os.path.abspath(file).startswith('{}/'.format(os.path.abspath(dir))):
-            print('Skipping {}'.format(file))
+        if os.path.abspath(file).startswith(f'{os.path.abspath(dir)}/'):
+            print(f'Skipping {file}')
             return True
 
     return False
@@ -358,27 +357,29 @@ def main(opts):
         if opts.can_fail:
             can_fail = loadfilelist(opts.can_fail)
 
-            unexpected = failures.difference(can_fail)
-            if unexpected:
-                logging.error(('validation failed for the following '
-                               'non-whitelisted files:\n%s'),
-                              '\n'.join([' - ' + f for f in
-                                         sorted(unexpected)]))
+            if unexpected := failures.difference(can_fail):
+                logging.error(
+                    'validation failed for the following '
+                    'non-whitelisted files:\n%s',
+                    '\n'.join([f' - {f}' for f in sorted(unexpected)]),
+                )
                 raise SystemExit(1)
 
-            did_not_fail = can_fail - failures.intersection(can_fail)
-            if did_not_fail:
-                logging.error(('the following files are whitelisted '
-                               'but validated successfully:\n%s'),
-                              '\n'.join([' - ' + f for f in
-                                         sorted(did_not_fail)]))
+            if did_not_fail := can_fail - failures.intersection(can_fail):
+                logging.error(
+                    'the following files are whitelisted '
+                    'but validated successfully:\n%s',
+                    '\n'.join([f' - {f}' for f in sorted(did_not_fail)]),
+                )
                 raise SystemExit(1)
 
             # no unexpected failures
             return
 
-        logging.error('validation failed for the following files:\n%s',
-                      '\n'.join([' - ' + f for f in sorted(failures)]))
+        logging.error(
+            'validation failed for the following files:\n%s',
+            '\n'.join([f' - {f}' for f in sorted(failures)]),
+        )
 
         if NO_FAIL or opts.no_errors:
             logging.warning("ignoring errors")
@@ -388,10 +389,7 @@ def main(opts):
 
 if __name__ == '__main__':
     opts = parse_arguments()
-    if opts.verbose or D or V:
-        lvl = logging.DEBUG
-    else:
-        lvl = logging.INFO
+    lvl = logging.DEBUG if opts.verbose or D or V else logging.INFO
     logging.basicConfig(level=lvl)
 
     if CAN_FAIL:

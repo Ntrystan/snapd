@@ -24,10 +24,9 @@ def main(opts):
 
     steps = []
     for line in lines:
-        match = re.match(r".*-- snap startup ({.*})", line)
-        if match:
-            logging.debug("got match: %s", match.group(1))
-            rawdata = json.loads(match.group(1))
+        if match := re.match(r".*-- snap startup ({.*})", line):
+            logging.debug("got match: %s", match[1])
+            rawdata = json.loads(match[1])
             steps.append(rawdata)
     if not steps:
         print("no logs found")

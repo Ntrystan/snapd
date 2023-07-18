@@ -34,9 +34,9 @@ def get_commit_range():
         # merge commit so use "foo..bar" syntax to just check the proposed
         # commits
         dest, proposed = parents
-        return "{}..{}".format(dest, proposed)
+        return f"{dest}..{proposed}"
     else:
-        raise RuntimeError("expected two parents, but got {}".format(parents))
+        raise RuntimeError(f"expected two parents, but got {parents}")
 
 
 if __name__ == "__main__":
@@ -54,13 +54,10 @@ if __name__ == "__main__":
             continue
         name, addr = parseaddr(potentialemail)
         if addr == "":
-            print(
-                "Found invalid email %s for commmit %s" % (potentialemail, commithash)
-            )
+            print(f"Found invalid email {potentialemail} for commmit {commithash}")
             exit(1)
         if not addr.isascii():
             print(
-                "Found invalid non-ascii email %s for commmit %s"
-                % (potentialemail, commithash)
+                f"Found invalid non-ascii email {potentialemail} for commmit {commithash}"
             )
             exit(1)

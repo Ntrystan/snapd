@@ -24,7 +24,7 @@ def read_gpio_pin(read_fd: int) -> str:
     if not pin.isnumeric():
         logging.warning("invalid gpio pin %s", pin)
         return ""
-    return "gpio{}".format(pin)
+    return f"gpio{pin}"
 
 
 def export_ready(read_fd: int, _) -> bool:

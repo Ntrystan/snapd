@@ -61,15 +61,14 @@ class TermReader:
 
     async def expect(self, search):
         while True:
-            m = re.search(search, self._buf)
-            if m:
-                print("Found {}. Eaten: {}".format(search, self._buf[0:m.endpos]))
-                del self._buf[0:m.endpos]
+            if m := re.search(search, self._buf):
+                print(f"Found {search}. Eaten: {self._buf[:m.endpos]}")
+                del self._buf[:m.endpos]
                 return True
             try:
                 self._buf.extend(await asyncio.wait_for(self._pty.read(4096), timeout=2))
             except asyncio.TimeoutError:
-                print("Did not find {}. Available: {}".format(search, self._buf))
+                print(f"Did not find {search}. Available: {self._buf}")
                 return False
 
 
@@ -103,10 +102,8 @@ class Shell:
 
     async def aclose(self):
         killer = asyncio.create_task(self.kill())
-        try:
+        with contextlib.suppress(asyncio.TimeoutError):
             await asyncio.wait_for(self._process.wait(), timeout=1.5)
-        except asyncio.TimeoutError:
-            pass
         killer.cancel()
 
 
@@ -115,7 +112,7 @@ async def run(init, executable):
         async with contextlib.aclosing(await Shell.create(pty, init)):
             reader = TermReader(pty)
             assert await reader.expect(rb'prompt[$] ')
-            print(await pty.write('{} -b \t\t'.format(executable).encode('ascii')))
+            print(await pty.write(f'{executable} -b \t\t'.encode('ascii')))
             assert await reader.expect(b'\a') # Bell
             assert await reader.expect(rb'counterrevolutionary  *electroencephalogram  *uncharacteristically')
 

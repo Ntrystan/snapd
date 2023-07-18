@@ -59,7 +59,7 @@ def is_cgroup_v2():
 def dump_v1(snap_app):
     """Dump device entries from a v1 device cgroup. Entries are already formatted
     in the correct way"""
-    group_name = "snap.{}".format(snap_app)
+    group_name = f"snap.{snap_app}"
     with open(
         os.path.join("/sys/fs/cgroup/devices/", group_name, "devices.list")
     ) as inf:
@@ -67,12 +67,12 @@ def dump_v1(snap_app):
 
 
 def device_change_v1(snap_app, allow, kind, major_minor):
-    group_name = "snap.{}".format(snap_app)
+    group_name = f"snap.{snap_app}"
     devices_control = "devices.allow" if allow else "devices.deny"
     with open(
-        os.path.join("/sys/fs/cgroup/devices/", group_name, devices_control), "w+"
-    ) as outf:
-        outf.write("{} {} rwm".format(kind, major_minor))
+            os.path.join("/sys/fs/cgroup/devices/", group_name, devices_control), "w+"
+        ) as outf:
+        outf.write(f"{kind} {major_minor} rwm")
 
 
 class DeviceCgroupV2Key(ctypes.Structure):
@@ -107,28 +107,26 @@ def dump_v2(snap_app):
     except ValueError:
         print("error: malformed snap.app name", file=sys.stderr)
         raise SystemExit(1)
-    map_pin_name = "snap_{}_{}".format(snap, app)
+    map_pin_name = f"snap_{snap}_{app}"
     output = subprocess.check_output(
         [
             "bpftool",
             "map",
             "dump",
             "pinned",
-            "/sys/fs/bpf/snap/{}".format(map_pin_name),
+            f"/sys/fs/bpf/snap/{map_pin_name}",
             "-j",
-        ],
+        ]
     )
     logging.debug("got bpftool output %s", output)
     entries = json.loads(output)
     for entry in entries:
         raw_key = entry.get("key")
         if not raw_key:
-            raise RuntimeError("unexpected object content in {}".format(output))
+            raise RuntimeError(f"unexpected object content in {output}")
         if len(raw_key) != ctypes.sizeof(DeviceCgroupV2Key):
             raise RuntimeError(
-                "unexpected size of raw key {} (expected {})".format(
-                    len(raw_key), ctypes.sizeof(DeviceCgroupV2Key)
-                )
+                f"unexpected size of raw key {len(raw_key)} (expected {ctypes.sizeof(DeviceCgroupV2Key)})"
             )
         raw = bytearray([int(v, 16) for v in raw_key])
         key = DeviceCgroupV2Key.from_buffer(raw)
@@ -162,13 +160,10 @@ def device_change_v2(snap_app, allow, kind, major_minor):
     except ValueError:
         print("error: malformed major:minor", file=sys.stderr)
         raise SystemExit(1)
-    map_pin_name = "snap_{}_{}".format(snap, app)
+    map_pin_name = f"snap_{snap}_{app}"
     key = DeviceCgroupV2Key()
     key.major = int(major)
-    if minor == "*":
-        key.minor = DeviceCgroupV2Key.DEVICE_MINOR_ANY
-    else:
-        key.minor = int(minor)
+    key.minor = DeviceCgroupV2Key.DEVICE_MINOR_ANY if minor == "*" else int(minor)
     key._typ = kind.encode()[0]
     key_arg = ["0x%02x" % b for b in bytes(key)]
 
@@ -178,21 +173,23 @@ def device_change_v2(snap_app, allow, kind, major_minor):
             "map",
             "update",
             "pinned",
-            "/sys/fs/bpf/snap/{}".format(map_pin_name),
+            f"/sys/fs/bpf/snap/{map_pin_name}",
             "key",
+            *key_arg,
+            "value",
+            "01",
+            "any",
         ]
-        cmd.extend(key_arg)
-        cmd.extend(["value", "01", "any"])
     else:
         cmd = [
             "bpftool",
             "map",
             "delete",
             "pinned",
-            "/sys/fs/bpf/snap/{}".format(map_pin_name),
+            f"/sys/fs/bpf/snap/{map_pin_name}",
             "key",
+            *key_arg,
         ]
-        cmd.extend(key_arg)
     logging.debug("running command %s", cmd)
     subprocess.check_call(
         cmd,
@@ -209,7 +206,7 @@ def main(opts):
             dump_v1(opts.snap_app)
         else:
             dump_v2(opts.snap_app)
-    elif func == "allow" or func == "deny":
+    elif func in ["allow", "deny"]:
         allow_or_deny = func == "allow"
         if not is_v2:
             device_change_v1(opts.snap_app, allow_or_deny, opts.kind, opts.major_minor)
@@ -219,8 +216,6 @@ def main(opts):
 
 if __name__ == "__main__":
     options = parse_arguments()
-    lvl = logging.INFO
-    if options.verbose:
-        lvl = logging.DEBUG
+    lvl = logging.DEBUG if options.verbose else logging.INFO
     logging.basicConfig(level=lvl)
     main(options)

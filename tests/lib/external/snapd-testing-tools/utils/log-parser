@@ -96,13 +96,11 @@ class Result:
 
     def __repr__(self):
         if self.detail:
-            return '{}{}'.format(self.source_line, str(self.detail))
+            return f'{self.source_line}{str(self.detail)}'
         return self.source_line
 
     def __dict__(self):
-        prepared_detail = None
-        if self.detail:
-            prepared_detail = self.detail.__dict__()
+        prepared_detail = self.detail.__dict__() if self.detail else None
         return {
             'type': self.type,
             'date': self.date,
@@ -134,14 +132,10 @@ class Info:
         self.source_line = source_line
 
     def __repr__(self):
-        if self.detail:
-            return '{}{}'.format(self.source_line, self.detail)
-        return self.source_line
+        return f'{self.source_line}{self.detail}' if self.detail else self.source_line
 
     def __dict__(self):
-        prepared_detail = None
-        if self.detail:
-            prepared_detail = self.detail.__dict__()
+        prepared_detail = self.detail.__dict__() if self.detail else None
         return {
             'type': self.type,
             'date': self.date,
@@ -240,8 +234,13 @@ class LogReader:
             print(''.join(str(x) for x in self.full_log if x.type == INFO and
                   x.info_type == ERROR_TYPE))
         elif details == ERROR_DEBUG:
-            print(''.join(str(x) for x in self.full_log if x.type == INFO and
-                  (x.info_type == ERROR_TYPE or x.info_type == DEBUG_TYPE)))
+            print(
+                ''.join(
+                    str(x)
+                    for x in self.full_log
+                    if x.type == INFO and x.info_type in [ERROR_TYPE, DEBUG_TYPE]
+                )
+            )
         else:
             print(''.join(str(x) for x in self.full_log if x.type == details))
 
@@ -301,30 +300,26 @@ class LogReader:
 
             # The line is a task execution; preparing, executing, restoring
             if self._match_task(line):
-                action = self._get_action(line)
-                if action:
+                if action := self._get_action(line):
                     self.full_log.append(action)
                 continue
 
             # The line shows info: error, debug, warning
             if self._match_info(line):
-                info = self._get_info(line)
-                if info:
+                if info := self._get_info(line):
                     self.full_log.append(info)
                 continue
 
             # The line is another operation: Rebooting, Discarding, Allocating
             # Waiting, Allocated, Connecting, Connected, Sending'
             if self._match_operation(line):
-                operation = self._get_operation(line)
-                if operation:
+                if operation := self._get_operation(line):
                     self.full_log.append(operation)
                 continue
 
             # The line is a result: Successful, Aborted, Failed
             if self._match_result(line):
-                result = self._get_result(line)
-                if result:
+                if result := self._get_result(line):
                     self.full_log.append(result)
                 continue
 
@@ -382,7 +377,7 @@ class LogReader:
         # has no output and has to be discarded
         line = self.lines[self.iter]
         if self._match_task(line) or self._match_info(line) or \
-            self._match_operation(line) or self._match_result(line):
+                self._match_operation(line) or self._match_result(line):
             return None
 
         detail=[]
@@ -390,7 +385,7 @@ class LogReader:
         while self.iter < len(self.lines):
             line = self._next_line()
             if self._match_task(line) or self._match_info(line) or \
-            self._match_operation(line) or self._match_result(line):
+                self._match_operation(line) or self._match_result(line):
                 # When the details is for results, then any match is ok to break
                 if results:
                     break
@@ -413,9 +408,9 @@ class LogReader:
                 break
             else:
                 detail.append(line)
-        
+
         # We leave the iter in the last time in case the log has finished
-        if not self.iter == len(self.lines):
+        if self.iter != len(self.lines):
             self.iter = self.iter - 1
         if not other_limit:
             other_limit = self.lines_limit
@@ -450,7 +445,7 @@ class LogReader:
             task = parts[5]
             extra = None
         else:
-            print('log-parser: detail type not recognized: {}'.format(info_type))
+            print(f'log-parser: detail type not recognized: {info_type}')
 
         detail = self._get_detail(results=False)
         return Info(info_type, verb, task, extra, date, time, detail, line)

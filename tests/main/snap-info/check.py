@@ -26,7 +26,7 @@ def check(name, d, *a):
             d[k] = d.get(k, "")
         if k not in d:
             die("in %s expected to have a key %r" % (name, k))
-        op(name + "." + k, d[k], *args)
+        op(f"{name}.{k}", d[k], *args)
         ka.add(k)
     kd = set(d)
     if ka < kd:

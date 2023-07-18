@@ -31,7 +31,7 @@ if __name__ == "__main__":
     elif sys.argv[1] == 'system':
         bus = dbus.SystemBus()
     else:
-        sys.stderr.write("Unknown D-Bus bus: {}\n".format(sys.argv[1]))
+        sys.stderr.write(f"Unknown D-Bus bus: {sys.argv[1]}\n")
         sys.exit(1)
 
     main_loop = GLib.MainLoop()

@@ -9,8 +9,5 @@ def run(bus):
 
 
 if __name__ == "__main__":
-    if sys.argv[1] == "system":
-        bus = dbus.SystemBus()
-    else:
-        bus = dbus.SessionBus()
+    bus = dbus.SystemBus() if sys.argv[1] == "system" else dbus.SessionBus()
     run(bus)

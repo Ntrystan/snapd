@@ -31,7 +31,7 @@ def prepare_config(config):
         if RATE in key:
             new_config[key] = int(config.get(key, 1))
 
-    logging.info("Using config: {}".format(new_config))
+    logging.info(f"Using config: {new_config}")
     return new_config
 
 
@@ -41,7 +41,7 @@ def read_config(config_path):
         config.read(config_path)
         return prepare_config(config["DEFAULT"])
     else:
-        logging.error("Config file {} not found".format(config_path))
+        logging.error(f"Config file {config_path} not found")
         exit(1)
 
 
@@ -54,12 +54,11 @@ def get_config():
 
 
 def check_config():
-    if os.path.isfile(CONFIG_PATH) and not os.path.isfile(CONFIG_PATH_FLAG):
-        new_config = read_config(CONFIG_PATH)
-        open(CONFIG_PATH_FLAG, "a").close()
-        return new_config
-    else:
+    if not os.path.isfile(CONFIG_PATH) or os.path.isfile(CONFIG_PATH_FLAG):
         return None
+    new_config = read_config(CONFIG_PATH)
+    open(CONFIG_PATH_FLAG, "a").close()
+    return new_config
 
 
 def main():
@@ -74,8 +73,7 @@ def main():
     count = 0
     while True:
         if count % config.get(RATE_CONFIG, 1) == 0:
-            new_config = check_config()
-            if new_config:
+            if new_config := check_config():
                 config = new_config
 
         procs = [
@@ -84,7 +82,7 @@ def main():
             if proc.name() in config.get(PROCS, [])
         ]
         for proc in procs:
-            if count % config.get("{}.{}".format(RATE, proc.name()), 1) == 0:
+            if count % config.get(f"{RATE}.{proc.name()}", 1) == 0:
                 logging.info(json.dumps(proc.as_dict(attrs=config.get(PROCATTRS))))
 
         time.sleep(config.get(INTERVAL))

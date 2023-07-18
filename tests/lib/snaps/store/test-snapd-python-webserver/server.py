@@ -35,12 +35,8 @@ class XkcdRequestHandler(SimpleHTTPRequestHandler):
 
 if __name__ == "__main__":
     # we start in the snappy base directory, ensure we are in "www"
-    os.chdir(os.path.dirname(__file__) + "/../www")
+    os.chdir(f"{os.path.dirname(__file__)}/../www")
 
-    if len(sys.argv) > 1:
-        port = int(sys.argv[1])
-    else:
-        port = 80
-
+    port = int(sys.argv[1]) if len(sys.argv) > 1 else 80
     httpd = HTTPServer(("", port), XkcdRequestHandler)
     httpd.serve_forever()

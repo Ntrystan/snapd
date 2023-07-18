@@ -29,10 +29,7 @@ class MountOpts(object):
 def mount(source, target, fstype, flags=0, data=""):
     # type: (Text, Text, Text, int, Text) -> None
     """mount is a thin wrapper around the mount library function."""
-    if PY2:
-        c = b"c"
-    else:
-        c = "c"
+    c = b"c" if PY2 else "c"
     libc_name = find_library(c)
     if libc_name is None:
         raise Exception("cannot find the C library")

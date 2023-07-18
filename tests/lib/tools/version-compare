@@ -64,19 +64,19 @@ def consistent_relation(rel_op, delta):
     The relation operator is one of ==, !=, <, <=, > or >=.
     Delta is either 0, a positive or a negative number.
     """
-    if rel_op == "==":
-        return delta == 0
-    elif rel_op == "!=":
+    if rel_op == "!=":
         return delta != 0
-    elif rel_op == ">":
-        return delta > 0
-    elif rel_op == ">=":
-        return delta >= 0
     elif rel_op == "<":
         return delta < 0
     elif rel_op == "<=":
         return delta <= 0
-    raise ValueError("unexpected relational operator " + rel_op)
+    elif rel_op == "==":
+        return delta == 0
+    elif rel_op == ">":
+        return delta > 0
+    elif rel_op == ">=":
+        return delta >= 0
+    raise ValueError(f"unexpected relational operator {rel_op}")
 
 
 class ConsistentRelationTests(unittest.TestCase):
@@ -142,15 +142,12 @@ def strict_version_cmp(a, b):
     try:
         a_items = [int(item, 10) for item in a.split(".")]
     except ValueError:
-        raise ValueError("version {} is not purely numeric".format(a))
+        raise ValueError(f"version {a} is not purely numeric")
     try:
         b_items = [int(item, 10) for item in b.split(".")]
     except ValueError:
-        raise ValueError("version {} is not purely numeric".format(b))
-    if PY2:
-        zip_longest_fn = itertools.izip_longest
-    else:
-        zip_longest_fn = itertools.zip_longest
+        raise ValueError(f"version {b} is not purely numeric")
+    zip_longest_fn = itertools.izip_longest if PY2 else itertools.zip_longest
     for a_val, b_val in zip_longest_fn(a_items, b_items, fillvalue=0):
         delta = a_val - b_val
         if delta != 0:
@@ -287,20 +284,16 @@ def main():
     try:
         delta = opts.algorithm(opts.version_a, opts.version_b)
     except ValueError as exc:
-        print("error: {}".format(exc), file=sys.stderr)
+        print(f"error: {exc}", file=sys.stderr)
         raise SystemExit(2)
     else:
         is_consistent = consistent_relation(opts.rel_op, delta)
         if opts.verbose:
-            print(
-                "delta between {} and {} is: {}".format(
-                    opts.version_a, opts.version_b, delta
-                )
-            )
+            print(f"delta between {opts.version_a} and {opts.version_b} is: {delta}")
             if is_consistent:
-                print("delta {} is consistent with {}".format(delta, opts.rel_op))
+                print(f"delta {delta} is consistent with {opts.rel_op}")
             else:
-                print("delta {} is inconsistent with {}".format(delta, opts.rel_op))
+                print(f"delta {delta} is inconsistent with {opts.rel_op}")
         raise SystemExit(0 if is_consistent else 1)
 
 

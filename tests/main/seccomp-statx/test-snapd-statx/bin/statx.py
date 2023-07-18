@@ -45,7 +45,7 @@ def evaluate_statx_support() -> SyscallStatus:
     try:
         SYS_STATX = sys_statx_table[machine]
     except KeyError:
-        raise Exception("unsupported architecture {}".format(machine))
+        raise Exception(f"unsupported architecture {machine}")
     libc_name = find_library("c")
     if libc_name is None:
         raise Exception("cannot find the C library")
@@ -85,15 +85,15 @@ def evaluate_statx_support() -> SyscallStatus:
     elif retval == -1 and errno == EPERM:
         return SyscallStatus.BLOCKED
     raise Exception(
-        "unexpected result of statx, retval: {}, errno: {}".format(retval, errno)
+        f"unexpected result of statx, retval: {retval}, errno: {errno}"
     )
 
 
 def main() -> None:
     try:
-        print("statx: {}".format(evaluate_statx_support().value))
+        print(f"statx: {evaluate_statx_support().value}")
     except Exception as exc:
-        print("statx: error: {}".format(exc))
+        print(f"statx: error: {exc}")
 
 
 if __name__ == "__main__":

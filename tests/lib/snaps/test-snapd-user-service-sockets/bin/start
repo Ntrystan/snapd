@@ -29,7 +29,7 @@ class SocketNameProtocol(asyncio.Protocol):
         self.socket_name = socket_name
 
     def connection_made(self, transport):
-        message = "Connected to {}\n".format(self.socket_name)
+        message = f"Connected to {self.socket_name}\n"
         transport.write(message.encode("ASCII"))
         transport.close()
 

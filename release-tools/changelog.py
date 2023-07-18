@@ -86,18 +86,9 @@ def update_fedora_changelog(opts, snapd_packaging_dir, new_changelog_entry, main
         False,
     )
 
-    # now we also need to add the changelog entry to the snapd.spec file
-    # this is a bit tricky, since we want a different format for the
-    # changelog in snapd.spec than we have for debian, but luckily it's
-    # just trimming whitespace off the front of each line in the
-    # changelog
-
-    dedented_changelog_lines = []
-    for line in new_changelog_entry.splitlines():
-        # strip the first 3 characters which are space characters so
-        # that we only have one single whitespace
-        dedented_changelog_lines.append(line[3:] + "\n")
-
+    dedented_changelog_lines = [
+        line[3:] + "\n" for line in new_changelog_entry.splitlines()
+    ]
     date = datetime.datetime.now().strftime("%a %b %d %Y")
 
     date_and_maintainer_header = f"* {date} {maintainer[0]} <{maintainer[1]}>\n"
@@ -228,7 +219,7 @@ def main(opts):
         # add the new changelog entry with our standard header
         # the spacing here is manually adjusted, the top of the comment is always
         # the same
-        templ = f"\n  * New upstream release, LP: #{opts.lpbug}\n" + new_changelog_entry
+        templ = f"\n  * New upstream release, LP: #{opts.lpbug}\n{new_changelog_entry}"
         ch.add_change(templ)
 
         # write it out back to the changelog file

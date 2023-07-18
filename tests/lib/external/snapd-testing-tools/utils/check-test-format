@@ -32,12 +32,11 @@ MANDATORY_KEYS = ["summary", "execute"]
 
 
 def check_mandatory_keys(task_keys):
-    findings = []
-    for key in MANDATORY_KEYS:
-        if key not in task_keys:
-            findings.append("Key '{}' is mandatory".format(key))
-
-    return findings
+    return [
+        f"Key '{key}' is mandatory"
+        for key in MANDATORY_KEYS
+        if key not in task_keys
+    ]
 
 
 def check_keys_order(task_keys):
@@ -50,9 +49,7 @@ def check_keys_order(task_keys):
             curr_index = SUPPORTED_KEYS.index(curr_key)
             if curr_index <= last_index:
                 findings.append(
-                    "Keys '{}' and '{}' do not follow the desired order: {}".format(
-                        last_key, curr_key, SUPPORTED_KEYS
-                    )
+                    f"Keys '{last_key}' and '{curr_key}' do not follow the desired order: {SUPPORTED_KEYS}"
                 )
 
             last_index = curr_index
@@ -60,9 +57,7 @@ def check_keys_order(task_keys):
 
         except ValueError:
             findings.append(
-                "key '{}' is not among the supported keys: {}".format(
-                    curr_key, SUPPORTED_KEYS
-                )
+                f"key '{curr_key}' is not among the supported keys: {SUPPORTED_KEYS}"
             )
 
     return findings
@@ -70,24 +65,24 @@ def check_keys_order(task_keys):
 
 def check_task_format(filepath):
     if not os.path.isfile(filepath):
-        print("Format checks failed for task {}".format(filepath))
+        print(f"Format checks failed for task {filepath}")
         print(" - The path is not a file")
         return False
 
-    filemap = dict()
+    filemap = {}
     try:
         with open(filepath, "r") as task:
             filemap = yaml.load(task, Loader=yamlordereddictloader.Loader)
     except yaml.scanner.ScannerError:
-        print("Invalid task format, checks failed for task {}".format(filepath))
+        print(f"Invalid task format, checks failed for task {filepath}")
         return False
 
     findings = check_keys_order(filemap.keys())
     findings.extend(check_mandatory_keys(filemap.keys()))
     if findings:
-        print("Format checks failed for task {}".format(filepath))
+        print(f"Format checks failed for task {filepath}")
         for finding in findings:
-            print(" - " + finding)
+            print(f" - {finding}")
         return False
 
     return True
@@ -95,7 +90,7 @@ def check_task_format(filepath):
 
 def check_dir(directory):
     if not os.path.isdir(directory):
-        print("Format checks failed for directory {}".format(directory))
+        print(f"Format checks failed for directory {directory}")
         print(" - The path is not a directory")
         return False
 
