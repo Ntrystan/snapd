@@ -20,8 +20,10 @@ if MYPY:
 
 def envpair(s):
     # type: (str) -> str
-    if not "=" in s:
-        raise argparse.ArgumentTypeError("environment variables expected format is 'KEY=VAL' got '{}'".format(s))
+    if "=" not in s:
+        raise argparse.ArgumentTypeError(
+            f"environment variables expected format is 'KEY=VAL' got '{s}'"
+        )
     return s
 
 def _make_parser():
@@ -89,12 +91,12 @@ def run_cmd(cmd, n, wait, maxmins, verbose, env):
     if maxmins != 0:
         attempts = itertools.count(1)
         t0 = time.time()
-        after = "{} minutes".format(maxmins)
+        after = f"{maxmins} minutes"
         of_attempts_suffix = ""
     else:
         attempts = range(1, n + 1)
-        after = "{} attempts".format(n)
-        of_attempts_suffix = " of {}".format(n)
+        after = f"{n} attempts"
+        of_attempts_suffix = f" of {n}"
     retcode = 0
     i = 0
     new_env = get_env(env)
@@ -104,7 +106,7 @@ def run_cmd(cmd, n, wait, maxmins, verbose, env):
             return 0
         if verbose:
             print(
-                "retry: command {} failed with code {}".format(" ".join(cmd), retcode),
+                f'retry: command {" ".join(cmd)} failed with code {retcode}',
                 file=sys.stderr,
             )
         if maxmins != 0:
@@ -114,20 +116,16 @@ def run_cmd(cmd, n, wait, maxmins, verbose, env):
         if i < n or maxmins != 0:
             if verbose:
                 print(
-                    "retry: next attempt in {} second(s) (attempt {}{})".format(
-                        wait, i, of_attempts_suffix
-                    ),
+                    f"retry: next attempt in {wait} second(s) (attempt {i}{of_attempts_suffix})",
                     file=sys.stderr,
                 )
             time.sleep(wait)
 
     if verbose and i > 1:
         print(
-            "retry: command {} keeps failing after {}".format(
-                " ".join(cmd), after
-                ),
-                file=sys.stderr,
-            )
+            f'retry: command {" ".join(cmd)} keeps failing after {after}',
+            file=sys.stderr,
+        )
     return retcode
 
 
@@ -145,7 +143,7 @@ def main():
     except OSError as exc:
         if ns.verbose:
             print(
-                "retry: cannot execute command {}: {}".format(" ".join(ns.cmd), exc),
+                f'retry: cannot execute command {" ".join(ns.cmd)}: {exc}',
                 file=sys.stderr,
             )
         raise SystemExit(1)

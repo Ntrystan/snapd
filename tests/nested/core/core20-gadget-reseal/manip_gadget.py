@@ -17,7 +17,7 @@ def parse_arguments():
 def must_find_struct(structs, name):
     found = [s for s in structs if s["name"] == name]
     if len(found) != 1:
-        raise RuntimeError("no structure with name {} among: {}".format(name, structs))
+        raise RuntimeError(f"no structure with name {name} among: {structs}")
     return found[0]
 
 

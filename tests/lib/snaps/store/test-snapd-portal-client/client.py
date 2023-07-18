@@ -36,9 +36,9 @@ class Client:
 
     def run(self, args):
         command_name = args.pop(0).replace("-", "_")
-        command = getattr(self, "cmd_{}".format(command_name), None)
+        command = getattr(self, f"cmd_{command_name}", None)
         if command is None:
-            sys.stderr.write("Unknown command: {}\n".format(command_name))
+            sys.stderr.write(f"Unknown command: {command_name}\n")
             sys.exit(1)
         return command(*args)
 

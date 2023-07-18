@@ -32,16 +32,12 @@ class sint(int):
     def __str__(self):
         # type: () -> str
         result = "{:+}".format(int(self))
-        if PY2:
-            return result.encode()
-        return result
+        return result.encode() if PY2 else result
 
     def __repr__(self):
         # type: () -> str
         result = "sint({:+})".format(int(self))
-        if PY2:
-            return result.encode()
-        return result
+        return result.encode() if PY2 else result
 
 
 class SintTests(unittest.TestCase):
@@ -53,8 +49,8 @@ class SintTests(unittest.TestCase):
 
     def test_str(self):
         # type: () -> None
-        self.assertEqual("{}".format(sint(1)), "+1")
-        self.assertEqual("{}".format(sint(-1)), "-1")
+        self.assertEqual(f"{sint(1)}", "+1")
+        self.assertEqual(f"{sint(-1)}", "-1")
 
     def test_repor(self):
         # type: () -> None
@@ -82,17 +78,13 @@ class Device(object):
 
     def __str__(self):
         # type: () -> str
-        result = "{}:{}".format(self.major, self.minor)
-        if PY2:
-            return result.encode()
-        return result
+        result = f"{self.major}:{self.minor}"
+        return result.encode() if PY2 else result
 
     def __repr__(self):
         # type: () -> str
-        result = "Device({}, {})".format(self.major, self.minor)
-        if PY2:
-            return result.encode()
-        return result
+        result = f"Device({self.major}, {self.minor})"
+        return result.encode() if PY2 else result
 
     @classmethod
     def differentiate(cls, a, b):
@@ -103,13 +95,8 @@ class Device(object):
 def _format_opt_fields(fields):
     # type: (List[Text]) -> str
     """_format_opt_fields returns the special formatting of optional fields."""
-    if len(fields):
-        result = " ".join(fields) + " -"
-    else:
-        result = "-"
-    if PY2:
-        return result.encode()
-    return result
+    result = " ".join(fields) + " -" if len(fields) else "-"
+    return result.encode() if PY2 else result
 
 
 def _diff_opt_fields(a, b):
@@ -127,7 +114,7 @@ def _diff_opt_fields(a, b):
             value_b_int = int(value_b)
         except ValueError:
             return a
-        diff.append("{}:{}".format(key_a, sint(value_a_int - value_b_int)))
+        diff.append(f"{key_a}:{sint(value_a_int - value_b_int)}")
     return diff
 
 
@@ -202,9 +189,9 @@ class OptionalFieldsTests(unittest.TestCase):
     def test_str(self):
         # type: () -> None
         fields = OptionalFields()
-        self.assertEqual("{}".format(fields), "-")
+        self.assertEqual(f"{fields}", "-")
         fields.append("master:123")
-        self.assertEqual("{}".format(fields), "master:123 -")
+        self.assertEqual(f"{fields}", "master:123 -")
 
 
 class MountInfoEntry(object):
@@ -309,16 +296,12 @@ class MountInfoEntry(object):
             " {0.mount_point} {0.mount_opts} {0.opt_fields} {0.fs_type}"
             " {0.mount_source} {0.sb_opts}"
         ).format(self)
-        if PY2:
-            return result.encode()
-        return result
+        return result.encode() if PY2 else result
 
     def __repr__(self):
         # type: () -> str
         result = "MountInfoEntry.parse({!r})".format(str(self))
-        if PY2:
-            return result.encode()
-        return result
+        return result.encode() if PY2 else result
 
     @property
     def dev_maj(self):
@@ -350,7 +333,7 @@ class AttrFilter(FilterExpr):
     def __contains__(self, entry):
         # type: (MountInfoEntry) -> bool
         value = getattr(entry, self.attr)
-        return bool(value == self.value)
+        return value == self.value
 
 
 class AttrPrefixFilter(FilterExpr):
@@ -420,10 +403,7 @@ def matches(entry, filters):
     matches checks if a mount entry matches a list of filter expressions.
     Filter expressions are ANDed together.
     """
-    for f in filters:
-        if entry not in f:
-            return False
-    return True
+    return all(entry in f for f in filters)
 
 
 def renumber_snap_revision(entry, seen):
@@ -634,8 +614,8 @@ def renumber_ns(entry, seen):
         return
     match = re.match(r"^([a-z_]+):\[(\d+)\]$", entry.root_dir)
     if match:
-        ns_type = match.group(1)
-        ns_id = int(match.group(2))
+        ns_type = match[1]
+        ns_id = int(match[2])
         entry.root_dir = "{}:[{}]".format(ns_type, alloc_n(ns_type, ns_id))
 
 

@@ -12,7 +12,6 @@ from typing import Iterable
 def if_open(dev: str) -> int:
     TUNSETIFF = 0x400454CA
     TUNSETOWNER = TUNSETIFF + 2
-    IFF_TUN = 0x0001
     IFF_TAP = 0x0002
     IFF_NO_PI = 0x1000
 
@@ -23,6 +22,7 @@ def if_open(dev: str) -> int:
 
     if_flags = None
     if dev.startswith("tun"):
+        IFF_TUN = 0x0001
         if_flags = IFF_TUN | IFF_NO_PI
     elif dev.startswith("tap"):
         if_flags = IFF_TAP | IFF_NO_PI
@@ -36,7 +36,7 @@ def if_open(dev: str) -> int:
 
 
 def device_exists(dev: str) -> bool:
-    return os.path.exists("/sys/devices/virtual/net/%s" % dev)
+    return os.path.exists(f"/sys/devices/virtual/net/{dev}")
 
 
 def valid_device_name(dev: str) -> None:
@@ -64,9 +64,7 @@ if __name__ == "__main__":
     valid_device_name(d)
 
     if device_exists(d):
-        raise SystemExit("ERROR: device '%s' already exists" % d)
-        sys.exit(1)
-
+        raise SystemExit(f"ERROR: device '{d}' already exists")
     found = False
     with closing_fd(if_open(d)) as fd:
         if device_exists(d):

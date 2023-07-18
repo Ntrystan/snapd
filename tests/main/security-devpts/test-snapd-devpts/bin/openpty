@@ -5,14 +5,14 @@ import sys
 
 files = os.listdir('/dev/pts')
 if 'ptmx' not in files or len(files) != 1:
-    print("%s != ['ptmx']" % files)
+    print(f"{files} != ['ptmx']")
     sys.exit(1)
 
 pty.openpty()
 files = os.listdir('/dev/pts')
 if 'ptmx' not in files or '0' not in files or len(files) != 2:
-    print("%s != ['0', 'ptmx']" % files)
+    print(f"{files} != ['0', 'ptmx']")
     sys.exit(1)
-print("PASS: %s" % files)
+print(f"PASS: {files}")
 
 sys.exit(0)

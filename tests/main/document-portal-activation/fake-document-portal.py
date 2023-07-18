@@ -28,8 +28,8 @@ class DocPortal(dbus.service.Object):
         with open(self._logfile, "a") as fp:
             fp.write("GetMountPoint called\n")
         if self._report_error:
-            raise dbus.DBusException("failure", name=DOC_IFACE + ".Error.Failed")
-        return "/run/user/{}/doc\x00".format(os.getuid()).encode("ASCII")
+            raise dbus.DBusException("failure", name=f"{DOC_IFACE}.Error.Failed")
+        return f"/run/user/{os.getuid()}/doc\x00".encode("ASCII")
 
 
 def main(argv):

@@ -28,10 +28,7 @@ class ProxyHandler(http.server.BaseHTTPRequestHandler):
 
     def _connect_to(self, netloc, soc):
         i = netloc.find(":")
-        if i >= 0:
-            host_port = netloc[:i], int(netloc[i + 1 :])
-        else:
-            host_port = netloc, 80
+        host_port = (netloc[:i], int(netloc[i + 1 :])) if i >= 0 else (netloc, 80)
         try:
             soc.connect(host_port)
         except socket.error as arg:
@@ -50,7 +47,7 @@ class ProxyHandler(http.server.BaseHTTPRequestHandler):
                 self.log_request(200)
                 s = self.protocol_version + " 200 Connection established\r\n"
                 self.wfile.write(s.encode())
-                s = "Proxy-agent: {}\r\n".format(self.version_string())
+                s = f"Proxy-agent: {self.version_string()}\r\n"
                 self.wfile.write(s.encode())
                 self.wfile.write("\r\n".encode())
                 self._read_write(soc, 300)
@@ -63,23 +60,19 @@ class ProxyHandler(http.server.BaseHTTPRequestHandler):
             self.path, "http"
         )
         if scm != "http" or fragment or not netloc:
-            s = "bad url {}".format(self.path)
+            s = f"bad url {self.path}"
             self.send_error(400, s.encode())
             return
         soc = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         try:
             if self._connect_to(netloc, soc):
                 self.log_request()
-                s = "{} {} {}\r\n".format(
-                    self.command,
-                    urllib.parse.urlunparse(("", "", path, params, query, "")),
-                    self.request_version,
-                )
+                s = f'{self.command} {urllib.parse.urlunparse(("", "", path, params, query, ""))} {self.request_version}\r\n'
                 soc.send(s.encode())
                 self.headers["Connection"] = "close"
                 del self.headers["Proxy-Connection"]
                 for key, val in self.headers.items():
-                    s = "{}: {}\r\n".format(key, val)
+                    s = f"{key}: {val}\r\n"
                     soc.send(s.encode())
                 soc.send("\r\n".encode())
                 self._read_write(soc)
@@ -98,12 +91,8 @@ class ProxyHandler(http.server.BaseHTTPRequestHandler):
                 break
             if ins:
                 for i in ins:
-                    if i is soc:
-                        out = self.connection
-                    else:
-                        out = soc
-                    data = i.recv(8192)
-                    if data:
+                    out = self.connection if i is soc else soc
+                    if data := i.recv(8192):
                         out.send(data)
                         count = 0
             if count == max_idling:
@@ -132,5 +121,5 @@ class ThreadingHTTPServer(socketserver.ThreadingMixIn, http.server.HTTPServer):
 
 if __name__ == "__main__":
     port = 3128
-    print("starting tinyproxy on port {}".format(port))
+    print(f"starting tinyproxy on port {port}")
     http.server.test(ProxyHandler, ThreadingHTTPServer, port=port)

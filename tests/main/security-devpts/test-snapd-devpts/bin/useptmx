@@ -5,7 +5,7 @@ from ctypes import *
 
 files = os.listdir('/dev/pts')
 if 'ptmx' not in files or len(files) != 1:
-    print("%s != ['ptmx']" % files)
+    print(f"{files} != ['ptmx']")
     sys.exit(1)
 
 libc = CDLL("libc.so.6")
@@ -15,6 +15,6 @@ libc.grantpt(master)
 libc.unlockpt(master)
 slave = os.open(slavedev, os.O_RDWR | os.O_NOCTTY)
 files = os.listdir('/dev/pts')
-print("PASS: %s" % files)
+print(f"PASS: {files}")
 
 sys.exit(0)

@@ -42,7 +42,7 @@ def environ_or_required(key):
 
 def connect(host, port, db_name):
     client = MongoClient(host=host, port=int(port))
-    if not db_name in client.list_database_names():
+    if db_name not in client.list_database_names():
         print("report-mongodb: invalid db name, it does not exist in mongodb")
         sys.exit(1)
     return client[db_name]
@@ -56,15 +56,16 @@ def _get_json(value):
 
 
 def find(db, col, after_date, after_time, before_date, before_time, system, backend, task, type, phase, text, exclude_detail, limit):
-    if not col in db.list_collection_names():
+    if col not in db.list_collection_names():
         print("report-mongodb: invalid db collection, it does not exist in db")
         sys.exit(1)
 
     # Filter the results based on some useful filters
-    filter = {}
-    filter["date"] = {'$gt': after_date, '$lt': before_date}
-    filter["time"] = {'$gt': after_time, '$lt': before_time}
-    task_exp = '{}:{}:.*/{}'.format(backend, system, task)
+    filter = {
+        "date": {'$gt': after_date, '$lt': before_date},
+        "time": {'$gt': after_time, '$lt': before_time},
+    }
+    task_exp = f'{backend}:{system}:.*/{task}'
     filter["task"] = {'$regex': task_exp}
     if type:
         filter["info_type"] = type.capitalize()

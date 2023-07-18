@@ -44,15 +44,13 @@ def match_role_with_fallback(role):
 def must_find_struct(structs, matcher):
     found = [s for s in structs if matcher(s)]
     if len(found) != 1:
-        raise RuntimeError("found {} matches among: {}".format(len(found), structs))
+        raise RuntimeError(f"found {len(found)} matches among: {structs}")
     return found[0]
 
 
 def may_find_struct(structs, matcher):
     found = [s for s in structs if matcher(s)]
-    if len(found) != 1:
-        return None
-    return found[0]
+    return None if len(found) != 1 else found[0]
 
 
 def bump_update_edition(update):

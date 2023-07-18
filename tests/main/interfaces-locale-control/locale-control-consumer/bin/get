@@ -4,7 +4,7 @@ import subprocess
 import sys
 
 def run(key):
-    prefix = key+'='
+    prefix = f'{key}='
     with open('/etc/default/locale') as input_data:
         for line in input_data:
             if line.startswith(prefix):
